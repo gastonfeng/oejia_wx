@@ -1,3 +1,4 @@
+import logging
 from xml.etree import ElementTree
 
 from werobot.messages import MESSAGE_TYPES, UnknownMessage
@@ -12,7 +13,7 @@ def parse_user_msg(xml):
     """
     if not xml:
         return
-
+    logging.debug(xml)
     wechat_message = dict((child.tag, to_text(child.text))
                           for child in ElementTree.fromstring(xml))
     wechat_message["raw"] = xml
