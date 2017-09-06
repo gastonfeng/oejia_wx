@@ -1,35 +1,36 @@
 # coding=utf-8
 import logging
-import os
 
-from werobot.robot import BaseRoBot
-from werobot.parser import parse_user_msg
-from werobot.reply import create_reply
-from werobot.logger import enable_pretty_logging
 import werkzeug
-from werobot.session.memorystorage import MemoryStorage
+from werobot.logger import enable_pretty_logging
+from werobot.parser import parse_user_msg
+from ..ext_libs.werobot.reply import create_reply
+from werobot.robot import BaseRoBot
+from ..ext_libs.werobot.session.memorystorage import MemoryStorage
 
-import openerp
-from openerp import http
-from openerp.http import request
+import odoo
+from odoo import http
+from odoo.http import request
 
 _logger = logging.getLogger(__name__)
-data_dir = openerp.tools.config['data_dir']
+data_dir = odoo.tools.config['data_dir']
 session_storage = MemoryStorage()
 
 
 def abort(code):
-    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code, content_type='text/html;charset=utf-8')
+    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code,
+                                      content_type='text/html;charset=utf-8')
 
 
 class WeRoBot(BaseRoBot):
     pass
 
+
 robot = WeRoBot(token='K5Dtswpte', enable_session=True, logger=_logger, session_storage=session_storage)
 enable_pretty_logging(robot.logger)
-    
-class WxController(http.Controller):
 
+
+class WxController(http.Controller):
     ERROR_PAGE_TEMPLATE = """
     <!DOCTYPE html>
     <html>
@@ -50,31 +51,31 @@ class WxController(http.Controller):
         </body>
     </html>
     """
-    
+
     def __init__(self):
         import client
         Param = request.env()['ir.config_parameter']
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        client.wxclient.appid = Param.get_param('wx_appid')  or ''
-        client.wxclient.appsecret = Param.get_param('wx_AppSecret')  or ''
-        
+        client.wxclient.appid = Param.get_param('wx_appid') or ''
+        client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
+
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
         if not robot.check_signature(
-            request.params.get("timestamp"),
-            request.params.get("nonce"),
-            request.params.get("signature")
+                request.params.get("timestamp"),
+                request.params.get("nonce"),
+                request.params.get("signature")
         ):
             return abort(403)
-        
+
         return request.params.get("echostr")
 
     @http.route('/wx_handler', type='http', auth="none", methods=['POST'], csrf=False)
     def handle(self, **kwargs):
         if not robot.check_signature(
-            request.params.get("timestamp"),
-            request.params.get("nonce"),
-            request.params.get("signature")
+                request.params.get("timestamp"),
+                request.params.get("nonce"),
+                request.params.get("signature")
         ):
             return abort(403)
 
@@ -84,7 +85,7 @@ class WxController(http.Controller):
         reply = robot.get_reply(message)
         if not reply:
             robot.logger.warning("No handler responded message %s"
-                                % message)
+                                 % message)
             return ''
-        #response.content_type = 'application/xml'
+        # response.content_type = 'application/xml'
         return create_reply(reply, message=message)

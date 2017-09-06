@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from werobot.client import Client, ClientException
-from openerp import exceptions
+from odoo import exceptions
 
 wxclient = Client('appid_xxxxxxxxxxxxxxx', 'appsecret_xxxxxxxxxxxxxx')
 
