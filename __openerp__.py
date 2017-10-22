@@ -2,7 +2,7 @@
 
 {
     'name': 'WeChat',
-    'version': '1.0.0',
+    'version': '1.0',
     'category': 'Social Network',
     'summary': '企业微信公众号的接入与管理',
     'author': 'Oejia',
