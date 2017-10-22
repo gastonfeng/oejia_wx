@@ -1,16 +1,11 @@
 ﻿# -*- coding: utf-8 -*-
 
-import werobot
-import os
-import inspect
 import hashlib
+import inspect
 import logging
-
-from six import PY3
+import os
 
 from werobot.config import Config, ConfigAttribute
-from werobot.parser import parse_user_msg
-from werobot.reply import create_reply
 from werobot.utils import to_binary
 
 __all__ = ['BaseRoBot', 'WeRoBot']
@@ -160,7 +155,7 @@ class BaseRoBot(object):
         if session_storage and hasattr(message, "source"):
             id = to_binary(message.source)
             session = session_storage[id]
-
+        logging.debug('message.type:' + message.type)
         handlers = self.get_handlers(message.type)
         try:
             for handler, args_count in handlers:

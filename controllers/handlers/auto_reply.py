@@ -1,10 +1,9 @@
 # coding=utf-8
 import re
 
-from ..routes import robot
-from openerp.http import request
-import openerp
+from odoo.http import request
 from .. import client
+from ..routes import robot
 
 
 @robot.text
