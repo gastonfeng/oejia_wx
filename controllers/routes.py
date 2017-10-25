@@ -2,10 +2,11 @@
 import logging
 
 import werkzeug
+from wechatpy import create_reply, client
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
 from werobot.robot import BaseRoBot
-from werobot.session.memorystorage import MemoryStorage
+from werobot.session import SessionStorage
 
 import odoo
 from odoo import http
@@ -13,7 +14,7 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
-session_storage = MemoryStorage()
+session_storage = SessionStorage()
 
 
 def abort(code):
@@ -52,11 +53,11 @@ class WxController(http.Controller):
     """
 
     def __init__(self):
-        import client
+        from wechatpy import client
         Param = request.env()['ir.config_parameter']
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        client.wxclient.appid = Param.get_param('wx_appid') or ''
-        client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
+        client.appid = Param.get_param('wx_appid') or ''
+        client.appsecret = Param.get_param('wx_AppSecret') or ''
         
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):

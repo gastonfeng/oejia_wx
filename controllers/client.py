@@ -4,7 +4,7 @@ from werobot.client import Client, ClientException
 
 from odoo import exceptions
 
-wxclient = Client('appid_xxxxxxxxxxxxxxx', 'secxxx')
+wxclient = Client({"APP_ID":'appid_xxxxxxxxxxxxxxx',"APP_SECRET":'secxxx'})
 
 UUID_OPENID = {}
 
