@@ -2,7 +2,7 @@
 
 from ..routes import robot
 from .. import client
-from openerp.http import request
+from odoo.http import request
 
 
 @robot.subscribe

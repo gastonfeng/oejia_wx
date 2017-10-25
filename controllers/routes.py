@@ -80,7 +80,7 @@ class WxController(http.Controller):
 
         body = request.httprequest.data
         message = parse_user_msg(body)
-        robot.logger.info("Receive message %s" % message)
+        robot.logger.info("Receive message %s, %s" % (message,message.type))
         reply = robot.get_reply(message)
         if not reply:
             robot.logger.warning("No handler responded message %s"
