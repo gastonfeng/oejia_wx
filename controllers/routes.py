@@ -2,11 +2,11 @@
 import logging
 
 import werkzeug
-from wechatpy import create_reply, client
+from wechatpy import create_reply
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
 from werobot.robot import BaseRoBot
-from werobot.session import SessionStorage
+from werobot.session.filestorage import FileStorage
 
 import odoo
 from odoo import http
@@ -14,7 +14,7 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
-session_storage = SessionStorage()
+session_storage = FileStorage()
 
 
 def abort(code):
