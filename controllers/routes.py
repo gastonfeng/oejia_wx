@@ -15,7 +15,7 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
-if platform.system() == "Windows":
+if platform == "win32":
     fn = 'werobot_session'
 else:
     fn = '/tmp/werobot_session'
