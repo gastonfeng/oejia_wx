@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+from sys import platform
 
 import werkzeug
 from wechatpy import create_reply
@@ -14,7 +15,12 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
-session_storage = FileStorage(filename='./werobot_session')
+if platform.system() == "Windows":
+    fn = 'werobot_session'
+else:
+    fn = '/tmp/werobot_session'
+session_storage = FileStorage(filename=fn)
+
 
 
 def abort(code):
