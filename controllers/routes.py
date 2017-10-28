@@ -14,7 +14,7 @@ from odoo.http import request
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
-session_storage = FileStorage()
+session_storage = FileStorage(filename='./werobot_session')
 
 
 def abort(code):
