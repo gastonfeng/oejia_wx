@@ -1,6 +1,7 @@
 # coding=utf-8
 import re
 
+import odoo
 from odoo.http import request
 from .. import client
 from ..routes import robot
@@ -29,7 +30,7 @@ def input_handle(message, session):
     #客服对话
     uuid = session.get("uuid", None)
     ret_msg = ''
-    cr, uid, context, db = request.cr, request.uid or openerp.SUPERUSER_ID, request.context, request.db
+    cr, uid, context, db = request.cr, request.uid or odoo.SUPERUSER_ID, request.context, request.db
     if not client.UUID_OPENID.has_key(db):
         client.UUID_OPENID[db] = {}
     if not uuid:
@@ -40,7 +41,7 @@ def input_handle(message, session):
         info = client.wxclient.get_user_info(openid)
         anonymous_name = info.get('nickname','微信网友')
         
-        reg = openerp.modules.registry.RegistryManager.get(db)
+        reg = odoo.modules.registry.RegistryManager.get(db)
         session_info = request.env["im_livechat.channel"].get_mail_channel(channel_id, anonymous_name)
         if session_info:
             uuid = session_info['uuid']
@@ -52,7 +53,7 @@ def input_handle(message, session):
         
         message_type = "message"
         message_content = content
-        request_uid = request.session.uid or openerp.SUPERUSER_ID
+        request_uid = request.session.uid or odoo.SUPERUSER_ID
         author_id = False  # message_post accept 'False' author_id, but not 'None'
         if request.session.uid:
             author_id = request.env['res.users'].sudo().browse(request.session.uid).partner_id.id
