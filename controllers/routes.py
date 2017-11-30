@@ -62,7 +62,8 @@ class WxController(http.Controller):
     def __init__(self):
         Param = request.env()['ir.config_parameter']
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        wxclient.appid = Param.get_param('wx_appid') or ''
+        appid = Param.get_param('wx_appid') or ''
+        wxclient.appid = appid
         wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
         
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])

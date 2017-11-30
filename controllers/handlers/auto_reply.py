@@ -37,8 +37,8 @@ def input_handle(message, session):
         Param = request.env()['ir.config_parameter']
         channel_id = Param.get_param('wx_channel') or 0
         channel_id = int(channel_id)
-        
-        info = client.wxclient.get_user_info(openid)
+
+        info = {}  # client.wxclient.get_user_info(openid)
         anonymous_name = info.get('nickname','微信网友')
         
         reg = odoo.modules.registry.RegistryManager.get(db)
