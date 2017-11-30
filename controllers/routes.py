@@ -10,6 +10,7 @@ from werobot.robot import BaseRoBot
 from werobot.session.filestorage import FileStorage
 
 import odoo
+from client import wxclient
 from odoo import http
 from odoo.http import request
 
@@ -59,11 +60,10 @@ class WxController(http.Controller):
     """
 
     def __init__(self):
-        from wechatpy import client
         Param = request.env()['ir.config_parameter']
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        client.appid = Param.get_param('wx_appid') or ''
-        client.appsecret = Param.get_param('wx_AppSecret') or ''
+        wxclient.appid = Param.get_param('wx_appid') or ''
+        wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
         
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
