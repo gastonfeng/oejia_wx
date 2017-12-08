@@ -10,7 +10,6 @@ from werobot.robot import WeRoBot
 from werobot.session.filestorage import FileStorage
 
 import odoo
-from client import wxclient
 from odoo import http
 from odoo.http import request
 
@@ -59,14 +58,14 @@ class WxController(http.Controller):
     """
 
     def __init__(self):
+        import client
         Param = request.env()['ir.config_parameter']
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        appid = Param.get_param('wx_appid') or ''
-        wxclient.appid = appid
-        wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
-        robot.config["APP_ID"] = appid
-        robot.config["APP_SECRET"] = wxclient.appsecret
-
+        client.wxclient.appid = Param.get_param('wx_appid') or ''
+        client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
+        logging.info(
+            'client.wxclient:%s %s - %s' % (robot.config["TOKEN"], client.wxclient.appid, client.wxclient.appsecret))
+        
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
         if not robot.check_signature(
