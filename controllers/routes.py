@@ -6,7 +6,7 @@ import werkzeug
 from wechatpy import create_reply
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
-from werobot.robot import BaseRoBot
+from werobot.robot import WeRoBot
 from werobot.session.filestorage import FileStorage
 
 import odoo
@@ -23,14 +23,13 @@ else:
 session_storage = FileStorage(filename=fn)
 
 
-
 def abort(code):
     return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code,
                                       content_type='text/html;charset=utf-8')
 
 
-class WeRoBot(BaseRoBot):
-    pass
+# class WeRoBot(BaseRoBot):
+#    pass
 
 
 robot = WeRoBot(token='K5Dtswpte', enable_session=True, logger=_logger, session_storage=session_storage)
@@ -65,7 +64,9 @@ class WxController(http.Controller):
         appid = Param.get_param('wx_appid') or ''
         wxclient.appid = appid
         wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
-        
+        robot.config["APP_ID"] = appid
+        robot.config["APP_SECRET"] = wxclient.appsecret
+
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
         if not robot.check_signature(
@@ -88,7 +89,7 @@ class WxController(http.Controller):
 
         body = request.httprequest.data
         message = parse_user_msg(body)
-        robot.logger.info("Receive message %s, %s" % (message,message.type))
+        robot.logger.info("Receive message %s, %s" % (message, message.type))
         reply = robot.get_reply(message)
         if not reply:
             robot.logger.warning("No handler responded message %s"
