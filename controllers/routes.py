@@ -32,6 +32,7 @@ def abort(code):
 
 
 robot = WeRoBot(token='K5Dtswpte', enable_session=True, logger=_logger, session_storage=session_storage)
+logging.info('robot:' + str(robot))
 enable_pretty_logging(robot.logger)
 
 
@@ -64,7 +65,10 @@ class WxController(http.Controller):
         client.wxclient.appid = Param.get_param('wx_appid') or ''
         client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
         logging.info(
-            'client.wxclient:%s %s - %s' % (robot.config["TOKEN"], client.wxclient.appid, client.wxclient.appsecret))
+            'client.wxclient:%s %s - %s,robot:%s' % (
+            robot.config["TOKEN"], client.wxclient.appid, client.wxclient.appsecret, str(robot)))
+        for h in robot._handlers:
+            logging.info(h + ': ' + str(robot._handlers[h]))
         
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
@@ -89,6 +93,9 @@ class WxController(http.Controller):
         body = request.httprequest.data
         message = parse_user_msg(body)
         robot.logger.info("Receive message %s, %s" % (message, message.type))
+        logging.info('robot:' + str(robot))
+        for h in robot._handlers:
+            logging.info(h + ': ' + str(robot._handlers[h]))
         reply = robot.get_reply(message)
         if not reply:
             robot.logger.warning("No handler responded message %s"
