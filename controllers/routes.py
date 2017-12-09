@@ -97,7 +97,7 @@ class WxController(http.Controller):
         for h in robot._handlers:
             logging.info(h + ': ' + str(robot._handlers[h]))
         reply = robot.get_reply(message)
-        logging.debug(str(reply))
+        logging.info("reply=" + str(reply))
         if not reply:
             robot.logger.warning("No handler responded message %s"
                                  % message)
