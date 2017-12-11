@@ -33,7 +33,7 @@ def input_handle(message, session):
     #客服对话
     uuid = session.get("uuid", None)
     logging.info('uuid:' + str(uuid))
-    ret_msg = ''
+    ret_msg = '这是回复信息'
     cr, uid, context, db = request.cr, request.uid or odoo.SUPERUSER_ID, request.context, request.db
     if not client.UUID_OPENID.has_key(db):
         client.UUID_OPENID[db] = {}
