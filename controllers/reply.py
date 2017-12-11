@@ -129,7 +129,7 @@ class MusicReply(WeChatReply):
 
 
 def create_reply(reply, message=None):
-    if isinstance(reply, WeChatReply):
+    if isinstance(reply, WeChatReply) or isinstance(reply, TextReply):
         return reply.render()
     elif is_string(reply):
         reply = TextReply(message=message, content=reply)
