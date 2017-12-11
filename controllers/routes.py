@@ -91,6 +91,7 @@ class WxController(http.Controller):
             return abort(403)
 
         body = request.httprequest.data
+        robot.logger.info(body)
         message = parse_user_msg(body)
         robot.logger.info("Receive message %s, %s" % (message, message.type))
         logging.info('robot:' + str(robot))
@@ -103,4 +104,4 @@ class WxController(http.Controller):
                                  % message)
             return ''
         # response.content_type = 'application/xml'
-        return create_reply(reply, message=message)
+        return create_reply(reply, message=message, render=True)

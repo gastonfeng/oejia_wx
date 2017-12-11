@@ -16,7 +16,7 @@ def input_handle(message, session):
     openid = message.source
     
     rs = request.env()['wx.autoreply'].sudo().search([])
-    logging.info(str(rs))
+    logging.info(str(rs) + " " + content)
     for rc in rs:
         if rc.type==1:
             if content==rc.key:
@@ -43,14 +43,14 @@ def input_handle(message, session):
         channel_id = int(channel_id)
 
         # info = client.wxclient.get_user_info(openid)
-        anonymous_name = '微信网友'  # info.get('nickname','微信网友')
+        anonymous_name = u'微信网友'  # info.get('nickname','微信网友')
         
         reg = odoo.modules.registry.RegistryManager.get(db)
         session_info = request.env["im_livechat.channel"].get_mail_channel(channel_id, anonymous_name)
         if session_info:
             uuid = session_info['uuid']
             session["uuid"] = uuid
-        ret_msg = '请稍后，正在分配客服为您解答'
+        ret_msg = u'请稍后，正在分配客服为您解答'
     
     if uuid:
         client.UUID_OPENID[db][uuid] = openid
