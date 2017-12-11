@@ -3,7 +3,7 @@ import logging
 from sys import platform
 
 import werkzeug
-from wechatpy.replies import BaseReply
+from reply import create_reply
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
 from werobot.robot import WeRoBot
@@ -90,12 +90,12 @@ class WxController(http.Controller):
         message = parse_user_msg(body)
         robot.logger.info("Receive message %s, %s" % (message, message.type))
         reply = robot.get_reply(message)
-        logging.info("reply=" + str(reply) + ' BaseReply:' + str(isinstance(reply, BaseReply)))
+        logging.info("reply=" + str(reply) )
         if not reply:
             robot.logger.warning("No handler responded message %s"
                                  % message)
             return ''
         # response.content_type = 'application/xml'
-        m = reply  # create_reply(reply, message=message, render=True)
+        m = create_reply(reply, message=message)
         robot.logger.info(m)
         return m
