@@ -63,5 +63,5 @@ def input_handle(message, session):
             author_id = request.env['res.users'].sudo().browse(request.session.uid).partner_id.id
         mail_channel = request.env["mail.channel"].sudo(request_uid).search([('uuid', '=', uuid)], limit=1)
         message = mail_channel.sudo(request_uid).with_context(mail_create_nosubscribe=True).message_post(author_id=author_id, email_from=False, body=message_content, message_type='comment', subtype='mail.mt_comment', content_subtype='plaintext')
-    logging.info('ret_msg' + ret_msg)
+    logging.info('ret_msg:' + ret_msg)
     return ret_msg

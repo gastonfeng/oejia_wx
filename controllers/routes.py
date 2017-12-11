@@ -3,7 +3,6 @@ import logging
 from sys import platform
 
 import werkzeug
-from wechatpy import create_reply
 from wechatpy.replies import BaseReply
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
@@ -97,6 +96,6 @@ class WxController(http.Controller):
                                  % message)
             return ''
         # response.content_type = 'application/xml'
-        m = create_reply(reply, message=message, render=True)
+        m = reply  # create_reply(reply, message=message, render=True)
         robot.logger.info(m)
         return m
