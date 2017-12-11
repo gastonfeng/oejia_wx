@@ -64,12 +64,7 @@ class WxController(http.Controller):
         robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
         client.wxclient.appid = Param.get_param('wx_appid') or ''
         client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
-        logging.info(
-            'client.wxclient:%s %s - %s,robot:%s' % (
-            robot.config["TOKEN"], client.wxclient.appid, client.wxclient.appsecret, str(robot)))
-        for h in robot._handlers:
-            logging.info(h + ': ' + str(robot._handlers[h]))
-        
+
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
         if not robot.check_signature(
@@ -94,9 +89,6 @@ class WxController(http.Controller):
         robot.logger.info(body)
         message = parse_user_msg(body)
         robot.logger.info("Receive message %s, %s" % (message, message.type))
-        logging.info('robot:' + str(robot))
-        for h in robot._handlers:
-            logging.info(h + ': ' + str(robot._handlers[h]))
         reply = robot.get_reply(message)
         logging.info("reply=" + str(reply))
         if not reply:
@@ -104,4 +96,6 @@ class WxController(http.Controller):
                                  % message)
             return ''
         # response.content_type = 'application/xml'
-        return create_reply(reply, message=message, render=True)
+        m = create_reply(reply, message=message, render=True)
+        robot.logger.info(m)
+        return m
