@@ -3,7 +3,6 @@ import logging
 from sys import platform
 
 import werkzeug
-from reply import create_reply
 from werobot.logger import enable_pretty_logging
 from werobot.parser import parse_user_msg
 from werobot.robot import WeRoBot
@@ -12,6 +11,7 @@ from werobot.session.filestorage import FileStorage
 import odoo
 from odoo import http
 from odoo.http import request
+from reply import create_reply
 
 _logger = logging.getLogger(__name__)
 data_dir = odoo.tools.config['data_dir']
@@ -89,6 +89,9 @@ class WxController(http.Controller):
         robot.logger.info(body)
         message = parse_user_msg(body)
         robot.logger.info("Receive message %s, %s" % (message, message.type))
+        logging.info('robot:' + str(robot))
+        for h in robot._handlers:
+            logging.info(h + ': ' + str(robot._handlers[h]))
         reply = robot.get_reply(message)
         logging.info("reply=" + str(reply) )
         if not reply:
