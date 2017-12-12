@@ -1,18 +1,14 @@
-import os
-import sys
-from unittest import TestCase
-
 import werobot
 from werobot import WeRoBot
 
-cur_dir = os.path.abspath(os.path.join(os.path.dirname(__file__)))
-ext_path = os.path.join(cur_dir, '../ext_libs')
-sys.path.append(ext_path)
+from odoo.tests import TransactionCase
 
 robot = WeRoBot(token='K5Dtswpte', enable_session=True)
 
 
-class TestWxController(TestCase):
+class TestWxController(TransactionCase):
+    at_install = False
+    post_install = True
     def test_handle(self):
         # c = WxController()
         # c.handle()
