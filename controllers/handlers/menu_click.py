@@ -1,9 +1,10 @@
 # coding=utf-8
 import logging
 
-from odoo.http import request
-from ..routes import robot
+from openerp.http import request
 
+
+def main(robot):
 
 @robot.click
 def onclick(message, session):

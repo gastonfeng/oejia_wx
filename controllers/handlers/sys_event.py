@@ -1,7 +1,6 @@
 # coding=utf-8
 
-from .. import client
-from odoo.http import request
+from openerp.http import request
 
 def main(robot):
 

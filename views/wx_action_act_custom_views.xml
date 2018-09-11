@@ -7,7 +7,7 @@
             <field name="model">wx.action.act_custom</field>
             <field name="type">form</field>
             <field name="arch" type="xml">
-                <form string="&#x81EA;&#x5B9A;&#x4E49;&#x52A8;&#x4F5C;" version="7.0">
+                <form string="自定义动作" version="7.0">
                     <sheet>
                         <group>
                             <field name="name"/>
@@ -23,7 +23,7 @@
             <field name="model">wx.action.act_custom</field>
             <field name="type">tree</field>
             <field name="arch" type="xml">
-                <tree string="&#x81EA;&#x5B9A;&#x4E49;&#x52A8;&#x4F5C;">
+                <tree string="自定义动作">
                     <field name="id"/>
                     <field name="name"/>
                     <field name="excute_type"/>
@@ -40,5 +40,6 @@
         </record>
         <menuitem action="wx_action_act_custom_action" id="wx_action_act_custom_menuitem" name="自定义动作"
                   parent="parent_menu_121" sequence="10"/>
+
     </data>
 </openerp>

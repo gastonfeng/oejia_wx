@@ -1,25 +1,13 @@
 # coding=utf-8
 import logging
-from sys import platform
 
 import werkzeug
-from werobot.logger import enable_pretty_logging
+from openerp import http
+from openerp.http import request
 from werobot.parser import parse_user_msg
-from werobot.robot import WeRoBot
-from werobot.session.filestorage import FileStorage
-
-import odoo
-from odoo import http
-from odoo.http import request
-from reply import create_reply
+from werobot.reply import create_reply
 
 _logger = logging.getLogger(__name__)
-data_dir = odoo.tools.config['data_dir']
-if platform == "win32":
-    fn = 'werobot_session'
-else:
-    fn = '/tmp/werobot_session'
-session_storage = FileStorage(filename=fn)
 
 
 def abort(code):
@@ -27,16 +15,8 @@ def abort(code):
                                       content_type='text/html;charset=utf-8')
 
 
-# class WeRoBot(BaseRoBot):
-#    pass
-
-
-robot = WeRoBot(token='K5Dtswpte', enable_session=True, logger=_logger, session_storage=session_storage)
-logging.info('robot:' + str(robot))
-enable_pretty_logging(robot.logger)
-
-
 class WxController(http.Controller):
+
     ERROR_PAGE_TEMPLATE = """
     <!DOCTYPE html>
     <html>
@@ -59,15 +39,22 @@ class WxController(http.Controller):
     """
 
     def __init__(self):
-        import client
-        Param = request.env()['ir.config_parameter']
-        robot.config["TOKEN"] = Param.get_param('wx_token') or 'K5Dtswpte'
-        client.wxclient.appid = Param.get_param('wx_appid') or ''
-        client.wxclient.appsecret = Param.get_param('wx_AppSecret') or ''
+        from . import client
+        entry = client.WxEntry()
+        entry.init(request.env)
+        robot = entry.robot
+        self.robot = robot
+        from .handlers import sys_event
+        from .handlers import auto_reply
+        from .handlers import menu_click
+        sys_event.main(robot)
+        auto_reply.main(robot)
+        menu_click.main(robot)
+
 
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
-        if not robot.check_signature(
+        if not self.robot.check_signature(
                 request.params.get("timestamp"),
                 request.params.get("nonce"),
                 request.params.get("signature")
@@ -78,7 +65,7 @@ class WxController(http.Controller):
 
     @http.route('/wx_handler', type='http', auth="none", methods=['POST'], csrf=False)
     def handle(self, **kwargs):
-        if not robot.check_signature(
+        if not self.robot.check_signature(
                 request.params.get("timestamp"),
                 request.params.get("nonce"),
                 request.params.get("signature")
@@ -86,19 +73,12 @@ class WxController(http.Controller):
             return abort(403)
 
         body = request.httprequest.data
-        robot.logger.info(body)
         message = parse_user_msg(body)
-        robot.logger.info("Receive message %s, %s" % (message, message.type))
-        logging.info('robot:' + str(robot))
-        for h in robot._handlers:
-            logging.info(h + ': ' + str(robot._handlers[h]))
-        reply = robot.get_reply(message)
-        logging.info("reply=" + str(reply) )
+        self.robot.logger.info("Receive message %s" % message)
+        reply = self.robot.get_reply(message)
         if not reply:
-            robot.logger.warning("No handler responded message %s"
-                                 % message)
+            self.robot.logger.warning("No handler responded message %s"
+                                      % message)
             return ''
         # response.content_type = 'application/xml'
-        m = create_reply(reply, message=message)
-        robot.logger.info(m)
-        return m
+        return create_reply(reply, message=message)

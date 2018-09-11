@@ -1,7 +1,8 @@
 # coding=utf-8
 
-from menu_about_models import ACTION_OPTION
-from odoo import models, fields
+from openerp import models, fields
+
+from .menu_about_models import ACTION_OPTION
 
 
 class wx_autoreply(models.Model):

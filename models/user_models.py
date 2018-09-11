@@ -2,9 +2,9 @@
 
 import logging
 
-from odoo import models, fields, api
-from odoo.exceptions import ValidationError
-from ..controllers import client
+from openerp import models, fields, api
+from openerp.exceptions import ValidationError, UserError
+
 from ..rpc import corp_client
 
 _logger = logging.getLogger(__name__)
@@ -12,9 +12,7 @@ _logger = logging.getLogger(__name__)
 
 class wx_user(models.Model):
     _name = 'wx.user'
-    _description = u'微信用户'
-    # _order =
-    # _inherit = []
+    _description = u'公众号用户'
 
     city = fields.Char(u'城市', )
     country = fields.Char(u'国家', )
@@ -28,12 +26,17 @@ class wx_user(models.Model):
     subscribe_time = fields.Char(u'关注时间', )
 
     headimg = fields.Html(compute='_get_headimg', string=u'头像')
+    last_uuid = fields.Char('会话ID')
+    user_id = fields.Many2one('res.users', '关联本系统用户')
 
     # _defaults = {
     # }
 
     @api.model
     def sync(self):
+        from ..controllers import client
+        entry = client.wxenv(self.env)
+        client = entry
         next_openid = 'init'
         c_total = 0
         c_flag = 0
@@ -42,16 +45,20 @@ class wx_user(models.Model):
         group_list = [e.group_id for e in objs]
         while next_openid:
             if next_openid == 'init': next_openid = None
-            followers_dict = client.wxclient.get_followers(next_openid)
+            from werobot.client import ClientException
+            try:
+                followers_dict = client.wxclient.get_followers(next_openid)
+            except ClientException as e:
+                raise ValidationError(u'微信服务请求异常，异常信息: %s' % e)
             c_total = followers_dict['total']
             m_count = followers_dict['count']
             next_openid = followers_dict['next_openid']
-            print 'get %s users' % m_count
+            _logger.info('get %s users' % m_count)
             if next_openid:
                 m_openids = followers_dict['data']['openid']
                 for openid in m_openids:
                     c_flag += 1
-                    print 'total %s users, now sync the %srd %s .' % (c_total, c_flag, openid)
+                    _logger.info('total %s users, now sync the %srd %s .' % (c_total, c_flag, openid))
                     rs = self.search([('openid', '=', openid)])
                     if rs.exists():
                         info = client.wxclient.get_user_info(openid)
@@ -68,25 +75,75 @@ class wx_user(models.Model):
                             g_flag = False
                         self.create(info)
 
-        print 'total:', c_total
+        _logger.info('sync total: %s' % c_total)
+
+    @api.model
+    def sync_confirm(self):
+        new_context = dict(self._context) or {}
+        new_context['default_info'] = "此操作可能需要一定时间，确认同步吗？"
+        new_context['default_model'] = 'wx.user'
+        new_context['default_method'] = 'sync'
+        # new_context['record_ids'] = self.id
+        return {
+            'name': u'确认同步公众号用户',
+            'type': 'ir.actions.act_window',
+            'res_model': 'wx.confirm',
+            'res_id': None,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'context': new_context,
+            'view_id': self.env.ref('oejia_wx.wx_confirm_view_form').id,
+            'target': 'new'
+        }
 
     @api.one
     def _get_headimg(self):
         self.headimg = '<img src=%s width="100px" height="100px" />' % (
-        self.headimgurl or '/web/static/src/img/placeholder.png')
+                    self.headimgurl or '/web/static/src/img/placeholder.png')
 
     # @api.one
     def _get_groups(self):
         Group = self.env['wx.user.group']
         objs = Group.search([])
-        return [(str(e.group_id), e.group_name) for e in objs]
+        return [(str(e.group_id), e.group_name) for e in objs] or [('0', '默认组')]
+
+    @api.multi
+    def send_text(self, text):
+        from werobot.client import ClientException
+        from ..controllers import client
+        entry = client.wxenv(self.env)
+        client = entry
+        for obj in self:
+            try:
+                client.send_text(obj.openid, text)
+            except ClientException as e:
+                _logger.info(u'微信消息发送失败 %s' % e)
+                raise UserError(u'发送失败 %s' % e)
+
+    @api.multi
+    def send_text_confirm(self):
+        self.ensure_one()
+
+        new_context = dict(self._context) or {}
+        new_context['default_model'] = 'wx.user'
+        new_context['default_method'] = 'send_text'
+        new_context['record_ids'] = self.id
+        return {
+            'name': u'发送微信消息',
+            'type': 'ir.actions.act_window',
+            'res_model': 'wx.confirm',
+            'res_id': None,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'context': new_context,
+            'view_id': self.env.ref('oejia_wx.wx_confirm_view_form_send').id,
+            'target': 'new'
+        }
 
 
 class wx_user_group(models.Model):
     _name = 'wx.user.group'
-    _description = u'微信用户组'
-    # _order =
-    # _inherit = []
+    _description = u'公众号用户组'
 
     count = fields.Integer(u'用户数', )
     group_id = fields.Integer(u'组编号', )
@@ -98,7 +155,14 @@ class wx_user_group(models.Model):
 
     @api.model
     def sync(self):
-        groups = client.wxclient.get_groups()
+        from ..controllers import client
+        entry = client.wxenv(self.env)
+        client = entry
+        from werobot.client import ClientException
+        try:
+            groups = client.wxclient.get_groups()
+        except ClientException as e:
+            raise ValidationError(u'微信服务请求异常，异常信息: %s' % e)
         for group in groups['groups']:
             rs = self.search([('group_id', '=', group['id'])])
             if rs.exists():
@@ -113,6 +177,24 @@ class wx_user_group(models.Model):
                     'count': group['count'],
                 })
 
+    @api.model
+    def sync_confirm(self):
+        new_context = dict(self._context) or {}
+        new_context['default_info'] = "此操作可能需要一定时间，确认同步吗？"
+        new_context['default_model'] = 'wx.user.group'
+        new_context['default_method'] = 'sync'
+        # new_context['record_ids'] = self.id
+        return {
+            'name': u'确认同步公众号用户组',
+            'type': 'ir.actions.act_window',
+            'res_model': 'wx.confirm',
+            'res_id': None,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'context': new_context,
+            'view_id': self.env.ref('oejia_wx.wx_confirm_view_form').id,
+            'target': 'new'
+        }
 
 class wx_corpuser(models.Model):
     _name = 'wx.corpuser'
@@ -130,24 +212,26 @@ class wx_corpuser(models.Model):
     extattr = fields.Char(u'扩展属性', )
 
     avatarimg = fields.Html(compute='_get_avatarimg', string=u'头像')
+    last_uuid = fields.Char('会话ID')
 
     _sql_constraints = [
-        ('userid_key', 'UNIQUE (userid)', u'账号已存在 !'),
-        ('weixinid_key', 'UNIQUE (weixinid)', u'微信号已存在 !'),
-        ('email_key', 'UNIQUE (email)', u'邮箱已存在 !'),
-        ('mobile_key', 'UNIQUE (mobile)', u'手机号已存在 !')
+        ('userid_key', 'UNIQUE (userid)', '账号已存在 !'),
+        ('email_key', 'UNIQUE (email)', '邮箱已存在 !'),
+        ('mobile_key', 'UNIQUE (mobile)', '手机号已存在 !')
     ]
 
     @api.one
     def _get_avatarimg(self):
         self.avatarimg = '<img src=%s width="100px" height="100px" />' % (
-        self.avatar or '/web/static/src/img/placeholder.png')
+                    self.avatar or '/web/static/src/img/placeholder.png')
 
     @api.model
     def create(self, values):
         _logger.info('wx.corpuser create >>> %s' % str(values))
-        if not (values.get('weixinid', '') or values.get('mobile', '') or values.get('email', '')):
-            raise ValidationError(u'手机号、邮箱、微信号三者不能同时为空')
+        values['email'] = values['email'] or False
+        values['mobile'] = values['mobile'] or False
+        if not (values.get('mobile', '') or values.get('email', '')):
+            raise ValidationError('手机号、邮箱不能同时为空')
         from_subscribe = False
         if '_from_subscribe' in values:
             from_subscribe = True
@@ -161,7 +245,12 @@ class wx_corpuser(models.Model):
             arg['department'] = 1
             if 'weixinid' in arg:
                 arg['weixin_id'] = arg.pop('weixinid')
-            corp_client.client.user.create(values['userid'], values['name'], **arg)
+            from wechatpy.exceptions import WeChatClientException
+            try:
+                entry = corp_client.corpenv(self.env)
+                entry.txl_client.user.create(values['userid'], values['name'], **arg)
+            except WeChatClientException as e:
+                raise ValidationError(u'微信服务请求异常，异常码: %s 异常信息: %s' % (e.errcode, e.errmsg))
         return obj
 
     @api.multi
@@ -173,9 +262,14 @@ class wx_corpuser(models.Model):
             if v != False and k in ['mobile', 'email', 'weixinid', 'gender', 'name']:
                 arg[k] = v
         for obj in self:
-            if not (obj.weixinid or obj.mobile or obj.email):
-                raise ValidationError(u'手机号、邮箱、微信号三者不能同时为空')
-            corp_client.client.user.update(obj.userid, **arg)
+            if not (obj.mobile or obj.email):
+                raise ValidationError('手机号、邮箱不能同时为空')
+            from wechatpy.exceptions import WeChatClientException
+            try:
+                entry = corp_client.corpenv(self.env)
+                entry.txl_client.user.update(obj.userid, **arg)
+            except WeChatClientException as e:
+                raise ValidationError(u'微信服务请求异常，异常码: %s 异常信息: %s' % (e.errcode, e.errmsg))
         return objs
 
     @api.multi
@@ -183,7 +277,8 @@ class wx_corpuser(models.Model):
         _logger.info('wx.corpuser unlink >>> %s' % str(self))
         for obj in self:
             try:
-                corp_client.client.user.delete(obj.userid)
+                entry = corp_client.corpenv(self.env)
+                entry.txl_client.user.delete(obj.userid)
             except:
                 pass
         ret = super(wx_corpuser, self).unlink()
@@ -213,3 +308,71 @@ class wx_corpuser(models.Model):
                         _partner.write({'wxcorp_user_id': ret.id})
                     except:
                         pass
+
+    @api.model
+    def sync_from_remote(self, department_id=1):
+        from wechatpy.exceptions import WeChatClientException
+        try:
+            entry = corp_client.corpenv(self.env)
+            users = entry.txl_client.user.list(department_id, fetch_child=True)
+            for info in users:
+                rs = self.search([('userid', '=', info['userid'])])
+                if not rs.exists():
+                    info['_from_subscribe'] = True
+                    info['gender'] = int(info['gender'])
+                    self.create(info)
+        except WeChatClientException as e:
+            raise ValidationError(u'微信服务请求异常，异常码: %s 异常信息: %s' % (e.errcode, e.errmsg))
+
+    @api.multi
+    def sync_from_remote_confirm(self):
+        new_context = dict(self._context) or {}
+        new_context['default_info'] = "此操作可能需要一定时间，确认同步吗？"
+        new_context['default_model'] = 'wx.corpuser'
+        new_context['default_method'] = 'sync_from_remote'
+        # new_context['record_ids'] = self.id
+        return {
+            'name': u'确认同步已有企业微信用户至本系统',
+            'type': 'ir.actions.act_window',
+            'res_model': 'wx.confirm',
+            'res_id': None,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'context': new_context,
+            'view_id': self.env.ref('oejia_wx.wx_confirm_view_form').id,
+            'target': 'new'
+        }
+
+    @api.multi
+    def send_text(self, text):
+        from wechatpy.exceptions import WeChatClientException
+        Param = self.env['ir.config_parameter']
+        Corp_Agent = Param.get_param('Corp_Agent') or 0
+        Corp_Agent = int(Corp_Agent)
+        for obj in self:
+            try:
+                entry = corp_client.corpenv(self.env)
+                entry.client.message.send_text(Corp_Agent, obj.userid, text)
+            except WeChatClientException as e:
+                _logger.info(u'微信消息发送失败 %s' % e)
+                raise UserError(u'发送失败 %s' % e)
+
+    @api.multi
+    def send_text_confirm(self):
+        self.ensure_one()
+
+        new_context = dict(self._context) or {}
+        new_context['default_model'] = 'wx.corpuser'
+        new_context['default_method'] = 'send_text'
+        new_context['record_ids'] = self.id
+        return {
+            'name': u'发送微信消息',
+            'type': 'ir.actions.act_window',
+            'res_model': 'wx.confirm',
+            'res_id': None,
+            'view_mode': 'form',
+            'view_type': 'form',
+            'context': new_context,
+            'view_id': self.env.ref('oejia_wx.wx_confirm_view_form_send').id,
+            'target': 'new'
+        }
