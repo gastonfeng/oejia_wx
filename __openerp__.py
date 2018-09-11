@@ -7,14 +7,13 @@
     'summary': '企业微信公众号的接入与管理',
     'author': 'Oejia',
     'website': 'http://www.oejia.net/',
-    'depends': ['web'],
     'application': True,
     'auto_data_include': ['views'],
     'data': [
+             'security/res_groups.xml',
+             'security/ir.model.access.csv',
              'data/wx_init_data.xml',
-             'data/oejia_wx.xml',
              'views/parent_menus.xml',
-             'views/wx_inherit_ext.xml',
 
              'views/wx_action_act_article_views.xml',
              'views/wx_action_act_custom_views.xml',
@@ -30,11 +29,13 @@
              'views/wx_user_views.xml',
              'views/wx_config_corpsettings_views.xml',
              'views/wx_corpuser_views.xml',
+             'views/wx_confirm_views.xml',
+
+             'views/res_partner_views.xml',
              ],
     'qweb': [
-        'static/src/xml/oejia_wx.xml'
     ],
-    'depends' : ['im_livechat'],
+    'depends' : ['web','im_livechat'],
     'installable': True,
     'active': False,
     'web': True,
