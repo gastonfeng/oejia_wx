@@ -1,12 +1,13 @@
 # coding=utf-8
-import base64
-import datetime
-import logging
-import os
 import re
+import logging
+import base64
+import os
+import datetime
 
-import openerp
 from openerp.http import request
+import openerp
+from .. import client
 
 _logger = logging.getLogger(__name__)
 
@@ -14,14 +15,14 @@ _logger = logging.getLogger(__name__)
 def get_img_data(pic_url):
     import requests
     headers = {
-        'Accept': 'textml,application/xhtml+xml,application/xml;q=0.9,image/webp,/;q=0.8',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
-        'Cache-Control': 'no-cache',
-        'Host': 'mmbiz.qpic.cn',
-        'Pragma': 'no-cache',
-        'Connection': 'keep-alive',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
+	'Accept': 'textml,application/xhtml+xml,application/xml;q=0.9,image/webp,/;q=0.8',
+	'Accept-Encoding': 'gzip, deflate',
+	'Accept-Language': 'zh-CN,zh;q=0.8,en;q=0.6,zh-TW;q=0.4',
+	'Cache-Control': 'no-cache',
+	'Host': 'mmbiz.qpic.cn',
+	'Pragma': 'no-cache',
+	'Connection': 'keep-alive',
+	'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.87 Safari/537.36',
     }
     r = requests.get(pic_url, headers=headers, timeout=50)
     return r.content
@@ -81,8 +82,7 @@ def main(robot):
             elif rc.type == 3:
                 try:
                     flag = re.compile(rc.key).match(content)
-                except:
-                    flag = False
+                except:flag=False
                 if flag:
                     return rc.action.get_wx_reply()
         # 客服对话
@@ -103,8 +103,7 @@ def main(robot):
             channel = request.env.ref('oejia_wx.channel_wx')
             channel_id = channel.id
 
-            session_info, ret_msg = request.env["im_livechat.channel"].create_mail_channel(channel_id, anonymous_name,
-                                                                                           content)
+            session_info, ret_msg = request.env["im_livechat.channel"].create_mail_channel(channel_id, anonymous_name, content)
             if session_info:
                 uuid = session_info['uuid']
                 client.OPENID_UUID[openid] = uuid
@@ -120,10 +119,7 @@ def main(robot):
             if request.session.uid:
                 author_id = request.env['res.users'].sudo().browse(request.session.uid).partner_id.id
             mail_channel = request.env["mail.channel"].sudo(request_uid).search([('uuid', '=', uuid)], limit=1)
-            message = mail_channel.sudo(request_uid).with_context(mail_create_nosubscribe=True).message_post(
-                author_id=author_id, email_from=mail_channel.anonymous_name, body=message_content,
-                message_type='comment', subtype='mail.mt_comment', content_subtype='plaintext',
-                attachment_ids=attachment_ids)
+            message = mail_channel.sudo(request_uid).with_context(mail_create_nosubscribe=True).message_post(author_id=author_id, email_from=mail_channel.anonymous_name, body=message_content, message_type='comment', subtype='mail.mt_comment', content_subtype='plaintext',attachment_ids=attachment_ids)
 
         return ret_msg
 

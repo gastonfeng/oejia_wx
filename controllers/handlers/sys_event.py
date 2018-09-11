@@ -1,5 +1,6 @@
 # coding=utf-8
 
+from .. import client
 from openerp.http import request
 
 def main(robot):

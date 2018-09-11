@@ -3,6 +3,8 @@
 import logging
 
 from openerp import models, fields, api
+from ..controllers import client
+from openerp.http import request
 from openerp.exceptions import ValidationError, UserError
 
 from ..rpc import corp_client
@@ -98,8 +100,7 @@ class wx_user(models.Model):
 
     @api.one
     def _get_headimg(self):
-        self.headimg = '<img src=%s width="100px" height="100px" />' % (
-                    self.headimgurl or '/web/static/src/img/placeholder.png')
+        self.headimg= '<img src=%s width="100px" height="100px" />'%(self.headimgurl or '/web/static/src/img/placeholder.png')
 
     # @api.one
     def _get_groups(self):

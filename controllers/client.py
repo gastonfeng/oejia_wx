@@ -1,11 +1,12 @@
 # coding=utf-8
 import logging
 
-from openerp import exceptions
 from werobot.client import Client, ClientException
-from werobot.logger import enable_pretty_logging
 from werobot.robot import BaseRoBot
 from werobot.session.memorystorage import MemoryStorage
+from werobot.logger import enable_pretty_logging
+
+from openerp import exceptions
 
 _logger = logging.getLogger(__name__)
 
@@ -98,8 +99,7 @@ class WxEntry(object):
             self.wxclient._token = None
             _ = self.wxclient.token
         except:
-            import traceback;
-            traceback.print_exc()
+            import traceback;traceback.print_exc()
             _logger.error(u'初始化微信客户端token失败，请在微信对接配置中填写好相关信息！')
 
         session_storage = MemoryStorage()
@@ -114,8 +114,7 @@ class WxEntry(object):
                 self.UUID_OPENID[obj.last_uuid] = obj.openid
         except:
             env.cr.rollback()
-            import traceback;
-            traceback.print_exc()
+            import traceback;traceback.print_exc()
 
         print('wx client init: %s %s' % (self.OPENID_UUID, self.UUID_OPENID))
 

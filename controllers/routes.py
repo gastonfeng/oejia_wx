@@ -1,18 +1,20 @@
 # coding=utf-8
 import logging
+import os
 
-import werkzeug
-from openerp import http
-from openerp.http import request
 from werobot.parser import parse_user_msg
 from werobot.reply import create_reply
+import werkzeug
+
+import openerp
+from openerp import http
+from openerp.http import request
 
 _logger = logging.getLogger(__name__)
 
 
 def abort(code):
-    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code,
-                                      content_type='text/html;charset=utf-8')
+    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code, content_type='text/html;charset=utf-8')
 
 
 class WxController(http.Controller):
@@ -55,9 +57,9 @@ class WxController(http.Controller):
     @http.route('/wx_handler', type='http', auth="none", methods=['GET'])
     def echo(self, **kwargs):
         if not self.robot.check_signature(
-                request.params.get("timestamp"),
-                request.params.get("nonce"),
-                request.params.get("signature")
+            request.params.get("timestamp"),
+            request.params.get("nonce"),
+            request.params.get("signature")
         ):
             return abort(403)
 
@@ -66,9 +68,9 @@ class WxController(http.Controller):
     @http.route('/wx_handler', type='http', auth="none", methods=['POST'], csrf=False)
     def handle(self, **kwargs):
         if not self.robot.check_signature(
-                request.params.get("timestamp"),
-                request.params.get("nonce"),
-                request.params.get("signature")
+            request.params.get("timestamp"),
+            request.params.get("nonce"),
+            request.params.get("signature")
         ):
             return abort(403)
 
@@ -78,7 +80,7 @@ class WxController(http.Controller):
         reply = self.robot.get_reply(message)
         if not reply:
             self.robot.logger.warning("No handler responded message %s"
-                                      % message)
+                                % message)
             return ''
-        # response.content_type = 'application/xml'
+        #response.content_type = 'application/xml'
         return create_reply(reply, message=message)
