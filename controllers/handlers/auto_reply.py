@@ -87,13 +87,18 @@ def main(robot):
                     return rc.action.get_wx_reply()
         # 客服对话
         uuid = client.OPENID_UUID.get(openid, None)
+        _logger.info(uuid)
         ret_msg = ''
         cr, uid, context, db = request.cr, request.uid or openerp.SUPERUSER_ID, request.context, request.db
 
         if not uuid:
             rs = request.env['wx.user'].sudo().search([('openid', '=', openid)])
+            _logger.info(rs)
             if not rs.exists():
-                info = client.wxclient.get_user_info(openid)
+                try:
+                    info = client.wxclient.get_user_info(openid)    #ClientException: 48001: api unauthorized hint: [HC1OqA0843hka2!]
+                except:
+                    info={}
                 info['group_id'] = ''
                 wx_user = request.env['wx.user'].sudo().create(info)
             else:

@@ -79,8 +79,7 @@ class WxController(http.Controller):
         self.robot.logger.info("Receive message %s" % message)
         reply = self.robot.get_reply(message)
         if not reply:
-            self.robot.logger.warning("No handler responded message %s"
-                                % message)
+            self.robot.logger.warning("No handler responded message %s %s %s %s"%( message,message.type,self.robot,self.robot._handlers))
             return ''
         #response.content_type = 'application/xml'
         return create_reply(reply, message=message)

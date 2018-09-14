@@ -107,4 +107,3 @@ class wx_menu(models.Model):
             buttons.append(self._get_menu_item(self.right, self.right_action, self.right_ids))
         menu_data = {'button': buttons}
         wxclient.create_menu(menu_data)
-        logging.info('wx_menu do_active:%s' % str(menu_data))
