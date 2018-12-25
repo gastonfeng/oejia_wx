@@ -1,7 +1,10 @@
 # coding=utf-8
+import logging
 
 from openerp import models, fields, api
 from ..controllers import client
+
+_logger = logging.getLogger(__name__)
 
 
 ACTION_OPTION = [
@@ -10,7 +13,7 @@ ACTION_OPTION = [
         ('wx.action.act_custom', '自定义动作'),
      ]
 
-MENU_ACTION_OPTION = ACTION_OPTION + [('wx.action.act_url', '跳转链接')]
+MENU_ACTION_OPTION = ACTION_OPTION + [('wx.action.act_url', '跳转链接'), ('wx.action.act_wxa', '小程序跳转'), ('wx.action.act_media', '返回素材')]
 
 class menu_item_base(models.AbstractModel):
 
@@ -70,6 +73,15 @@ class wx_menu(models.Model):
                       'name': name,
                       'url': action.url
                       }
+        elif action and action._name=='wx.action.act_wxa':
+            config = self.env['wx.app.config'].sudo().get_cur()
+            m_dict = {
+                      'type': 'miniprogram',
+                      'name': name,
+                      'url': action.pagepath,# 不支持小程序的老版本客户端将打开本url
+                      'appid': config.app_id or '',
+                      'pagepath': action.pagepath
+                      }
         else:
             m_dict = {
                       'type': 'click',
@@ -103,4 +115,5 @@ class wx_menu(models.Model):
         if self.right:
             buttons.append(self._get_menu_item(self.right, self.right_action, self.right_ids))
         menu_data =  {'button': buttons}
+        _logger.info(">>> active menu %s"%menu_data)
         wxclient.create_menu(menu_data)
