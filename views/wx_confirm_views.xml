@@ -10,8 +10,8 @@
                 <form string="确认">
                     <field name="info" readonly="1"/>
                     <footer>
-                      <button name="execute" string="确定" type="object" class="oe_highlight"/>
-                      <button string="放弃" class="oe_link" special="cancel"/>
+                        <button name="execute" string="确定" type="object" class="oe_highlight"/>
+                        <button string="放弃" class="oe_link" special="cancel"/>
                     </footer>
                 </form>
             </field>
@@ -24,8 +24,8 @@
                 <form string="发送">
                     <field name="info"/>
                     <footer>
-                      <button name="execute_with_info" string="确定" type="object" class="oe_highlight"/>
-                      <button string="放弃" class="oe_link" special="cancel"/>
+                        <button name="execute_with_info" string="确定" type="object" class="oe_highlight"/>
+                        <button string="放弃" class="oe_link" special="cancel"/>
                     </footer>
                 </form>
             </field>

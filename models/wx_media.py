@@ -8,12 +8,11 @@ _logger = logging.getLogger(__name__)
 
 
 class WxMedia(models.Model):
-
     _name = 'wx.media'
     _description = u'微信素材'
 
     media_id = fields.Char('素材ID')
-    media_type = fields.Selection([("image", '图片'),("video", '视频'), ("voice", '语音'), ("news", '图文')], string=u'类型')
+    media_type = fields.Selection([("image", '图片'), ("video", '视频'), ("voice", '语音'), ("news", '图文')], string=u'类型')
     name = fields.Char('名称')
     update_time = fields.Char('更新时间')
     url = fields.Char('Url')
@@ -29,20 +28,20 @@ class WxMedia(models.Model):
         while True:
             from werobot.client import ClientException
             try:
-                data_dict= entry.wxclient.get_media_list(media_type, offset, 20)
+                data_dict = entry.wxclient.get_media_list(media_type, offset, 20)
             except ClientException as e:
-                raise ValidationError(u'微信服务请求异常，异常信息: %s'%e)
+                raise ValidationError(u'微信服务请求异常，异常信息: %s' % e)
             c_total = data_dict['total_count']
             m_count = data_dict['item_count']
             offset += m_count
-            _logger.info('get %s media'%m_count)
-            if m_count>0:
+            _logger.info('get %s media' % m_count)
+            if m_count > 0:
                 items = data_dict["item"]
                 for item in items:
-                    c_flag +=1
+                    c_flag += 1
                     media_id = item["media_id"]
-                    _logger.info('total %s  now sync the %srd %s .'%(c_total, c_flag, media_id))
-                    rs = self.search( [('media_id', '=', media_id)] )
+                    _logger.info('total %s  now sync the %srd %s .' % (c_total, c_flag, media_id))
+                    rs = self.search([('media_id', '=', media_id)])
                     if rs.exists():
                         pass
                     else:
@@ -53,8 +52,7 @@ class WxMedia(models.Model):
             else:
                 break
 
-        _logger.info('sync total: %s'%c_flag)
-
+        _logger.info('sync total: %s' % c_flag)
 
     @api.model
     def sync(self):

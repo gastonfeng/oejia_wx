@@ -1,10 +1,9 @@
 # coding=utf-8
 
-from .. import client
 from openerp.http import request
 
-def main(robot):
 
+def main(robot):
     @robot.subscribe
     def subscribe(message):
         from .. import client
@@ -16,7 +15,7 @@ def main(robot):
         info = client.wxclient.get_user_info(openid)
         info['group_id'] = str(info['groupid'])
         env = request.env()
-        rs = env['wx.user'].sudo().search( [('openid', '=', openid)] )
+        rs = env['wx.user'].sudo().search([('openid', '=', openid)])
         if not rs.exists():
             env['wx.user'].sudo().create(info)
 
@@ -28,7 +27,7 @@ def main(robot):
         serviceid = message.target
         openid = message.source
         env = request.env()
-        rs = env['wx.user'].sudo().search( [('openid', '=', openid)] )
+        rs = env['wx.user'].sudo().search([('openid', '=', openid)])
         if rs.exists():
             rs.unlink()
 
@@ -36,4 +35,4 @@ def main(robot):
 
     @robot.view
     def url_view(message):
-        print('obot.view---------%s'%message)
+        print('obot.view---------%s' % message)

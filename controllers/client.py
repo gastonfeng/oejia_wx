@@ -1,12 +1,11 @@
 # coding=utf-8
 import logging
 
+from openerp import exceptions
 from werobot.client import Client, ClientException
+from werobot.logger import enable_pretty_logging
 from werobot.robot import BaseRoBot
 from werobot.session.memorystorage import MemoryStorage
-from werobot.logger import enable_pretty_logging
-
-from openerp import exceptions
 
 _logger = logging.getLogger(__name__)
 
@@ -14,10 +13,11 @@ _logger = logging.getLogger(__name__)
 class WeRoBot(BaseRoBot):
     pass
 
+
 WeRoBot.message_types.append('file')
 
-
 WxEnvDict = {}
+
 
 class WxEntry(object):
 
@@ -36,10 +36,10 @@ class WxEntry(object):
         try:
             self.wxclient.send_text_message(openid, text)
         except ClientException as e:
-            raise exceptions.UserError(u'发送失败 %s'%e)
+            raise exceptions.UserError(u'发送失败 %s' % e)
 
     def chat_send(self, uuid, msg):
-        openid = self.UUID_OPENID.get(uuid,None)
+        openid = self.UUID_OPENID.get(uuid, None)
         if openid:
             self.send_text(openid, msg)
 
@@ -47,13 +47,13 @@ class WxEntry(object):
         try:
             return self.wxclient.upload_media(media_type, media_file)
         except ClientException as e:
-            raise exceptions.UserError(u'image上传失败 %s'%e)
+            raise exceptions.UserError(u'image上传失败 %s' % e)
 
     def send_image_message(self, openid, media_id):
         try:
             self.wxclient.send_image_message(openid, media_id)
         except ClientException as e:
-            raise exceptions.UserError(u'发送image失败 %s'%e)
+            raise exceptions.UserError(u'发送image失败 %s' % e)
 
     def send_image(self, uuid, media_id):
         openid = self.UUID_OPENID.get(uuid, None)
@@ -66,7 +66,7 @@ class WxEntry(object):
             try:
                 self.wxclient.send_voice_message(openid, media_id)
             except ClientException as e:
-                raise exceptions.UserError(u'发送voice失败 %s'%e)
+                raise exceptions.UserError(u'发送voice失败 %s' % e)
 
     def init(self, env):
         dbname = env.cr.dbname
@@ -80,7 +80,7 @@ class WxEntry(object):
         self.wx_appid = Param.get_param('wx_appid') or ''
         self.wx_AppSecret = Param.get_param('wx_AppSecret') or ''
 
-        #robot.config["TOKEN"] = self.wx_token
+        # robot.config["TOKEN"] = self.wx_token
         self.wxclient.appid = self.wx_appid
         self.wxclient.appsecret = self.wx_AppSecret
 
@@ -89,7 +89,8 @@ class WxEntry(object):
             self.wxclient._token = None
             _ = self.wxclient.token
         except:
-            import traceback;traceback.print_exc()
+            import traceback;
+            traceback.print_exc()
             _logger.error(u'初始化微信客户端token失败，请在微信对接配置中填写好相关信息！')
 
         session_storage = MemoryStorage()
@@ -98,15 +99,17 @@ class WxEntry(object):
         self.robot = robot
 
         try:
-            users = env['wx.user'].sudo().search([('last_uuid','!=',None)])
+            users = env['wx.user'].sudo().search([('last_uuid', '!=', None)])
             for obj in users:
                 self.OPENID_UUID[obj.openid] = obj.last_uuid
                 self.UUID_OPENID[obj.last_uuid] = obj.openid
         except:
             env.cr.rollback()
-            import traceback;traceback.print_exc()
+            import traceback;
+            traceback.print_exc()
 
-        print('wx client init: %s %s'%(self.OPENID_UUID, self.UUID_OPENID))
+        print('wx client init: %s %s' % (self.OPENID_UUID, self.UUID_OPENID))
+
 
 def wxenv(env):
     return WxEnvDict[env.cr.dbname]

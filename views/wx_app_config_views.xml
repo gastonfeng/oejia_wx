@@ -9,7 +9,7 @@
             <field name="priority">999</field>
             <field name="arch" type="xml">
                 <tree string="小程序设置">
-               <field name="app_id"/>
+                    <field name="app_id"/>
                 </tree>
             </field>
         </record>
@@ -22,16 +22,16 @@
                 <form string="小程序设置" create="0" delete="0" duplicate="0">
                     <sheet>
 
-                     <group string="开发者配置" colspan="4">
-                        <field name="app_id"/>
-                        <field name="secret"/>
-                    </group>
+                        <group string="开发者配置" colspan="4">
+                            <field name="app_id"/>
+                            <field name="secret"/>
+                        </group>
 
-                     <group string="服务配置" colspan="4">
-                        <field name="handler_url"/>
-                        <field name="token"/>
-                        <field name="aeskey"/>
-                    </group>
+                        <group string="服务配置" colspan="4">
+                            <field name="handler_url"/>
+                            <field name="token"/>
+                            <field name="aeskey"/>
+                        </group>
 
                     </sheet>
                 </form>
@@ -44,13 +44,16 @@
             <field name="view_mode">tree,form</field>
             <field name="target">current</field>
             <field name="res_id">1</field>
-            <field name="help" type="html"><p></p></field>
+            <field name="help" type="html">
+                <p></p>
+            </field>
             <field name="view_ids"
                    eval="[(5, 0, 0),
                           (0, 0, {'view_mode': 'form', 'view_id': ref('wx_app_config_view_form_1003')}),
                     ]"/>
         </record>
-        <menuitem action="wx_app_config_action_404" id="wx_app_config_menuitem_322_1536754696" name="小程序对接设置" parent="parent_menu_123" sequence="50"/>
+        <menuitem action="wx_app_config_action_404" id="wx_app_config_menuitem_322_1536754696" name="小程序对接设置"
+                  parent="parent_menu_123" sequence="50"/>
 
     </data>
 </openerp>

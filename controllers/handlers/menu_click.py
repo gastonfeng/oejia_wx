@@ -1,11 +1,10 @@
 # coding=utf-8
-from werobot.utils import is_string
-from werobot.reply import create_reply
-
 from openerp.http import request
+from werobot.reply import create_reply
+from werobot.utils import is_string
+
 
 def main(robot):
-
     @robot.click
     def onclick(message, session):
         _name, action_id = message.key.split(',')
@@ -20,10 +19,10 @@ def main(robot):
             else:
                 media = ret
                 media_type = media.media_type
-                from werobot.replies import ImageReply, VoiceReply, VideoReply, ArticlesReply
-                if media_type=='image':
+                from werobot.replies import ImageReply, VoiceReply, VideoReply
+                if media_type == 'image':
                     return ImageReply(message=message, media_id=media.media_id).render()
-                elif media_type=='voice':
+                elif media_type == 'voice':
                     return VoiceReply(message=message, media_id=media.media_id).render()
-                elif media_type=='video':
+                elif media_type == 'video':
                     return VideoReply(message=message, media_id=media.media_id).render()

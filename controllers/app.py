@@ -2,22 +2,18 @@
 
 import logging
 
-from wechatpy.utils import check_signature
-from wechatpy import parse_message
-from wechatpy import create_reply
-
 import werkzeug
-
-
 from openerp import http
 from openerp.http import request
-
+from wechatpy import parse_message
+from wechatpy.utils import check_signature
 
 _logger = logging.getLogger(__name__)
 
 
 def abort(code):
-    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code, content_type='text/html;charset=utf-8')
+    return werkzeug.wrappers.Response('Unknown Error: Application stopped.', status=code,
+                                      content_type='text/html;charset=utf-8')
 
 
 class WxAppHandler(http.Controller):
@@ -28,13 +24,14 @@ class WxAppHandler(http.Controller):
         try:
             entry.init(request.env)
         except:
-            import traceback;traceback.print_exc()
+            import traceback;
+            traceback.print_exc()
         self.crypto = entry.crypto_handle
         self.token = entry.token
 
     @http.route('/app_handler', type='http', auth="none", methods=['GET', 'POST'], csrf=False)
     def handle(self, **kwargs):
-        _logger.info('>>> %s'%request.params)
+        _logger.info('>>> %s' % request.params)
         msg_signature = request.params.get('msg_signature', '')
         timestamp = request.params.get('timestamp', '')
         nonce = request.params.get('nonce', '')
@@ -71,7 +68,7 @@ class WxAppHandler(http.Controller):
                 return abort(403)
             msg = parse_message(msg)
 
-        _logger.info('>>> %s %s'%(msg.type, msg))
+        _logger.info('>>> %s %s' % (msg.type, msg))
 
         ret = ''
         if msg.type in ['text', 'image', 'voice']:
@@ -80,12 +77,10 @@ class WxAppHandler(http.Controller):
 
         return 'success'
 
-        #if encrypt_type=='raw':
+        # if encrypt_type=='raw':
         #    reply = create_reply(ret, msg).render()
         #    return reply
-        #else:
+        # else:
         #    reply = create_reply(ret, msg).render()
         #    res = self.crypto.encrypt_message(reply, request.params.get("nonce"), request.params.get("timestamp"))
         #    return res
-
-

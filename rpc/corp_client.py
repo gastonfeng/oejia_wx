@@ -1,13 +1,13 @@
 # coding=utf-8
-import logging
 import datetime
+import logging
 
 from wechatpy.enterprise import WeChatClient
 
 _logger = logging.getLogger(__name__)
 
-
 CorpEnvDict = {}
+
 
 class CorpEntry(object):
 
@@ -37,16 +37,16 @@ class CorpEntry(object):
 
     def get_uuid_from_uid(self, uid):
         uuid = None
-        _key = '%s'%uid
+        _key = '%s' % uid
         if _key in self.UID_UUID:
             _data = self.UID_UUID[_key]
             _now = datetime.datetime.now()
-            if _now - _data['last_time']<=  datetime.timedelta(seconds=10*60):
+            if _now - _data['last_time'] <= datetime.timedelta(seconds=10 * 60):
                 uuid = _data['uuid']
         return uuid
 
     def create_uuid_for_uid(self, uid, uuid, from_uid):
-        _key = '%s'%uid
+        _key = '%s' % uid
         if _key not in self.UID_UUID:
             self.UID_UUID[_key] = {}
         self.UID_UUID[_key]['from'] = from_uid
@@ -54,7 +54,7 @@ class CorpEntry(object):
         self.UID_UUID[_key]['uuid'] = uuid
 
     def update_uuid_lt(self, uid):
-        _key = '%s'%uid
+        _key = '%s' % uid
         self.UID_UUID[_key]['last_time'] = datetime.datetime.now()
 
     def init_client(self, appid, secret):
@@ -66,9 +66,9 @@ class CorpEntry(object):
         return self.txl_client
 
     def chat_send(self, uuid, msg):
-        #_dict = UUID_OPENID.get(db,None)
+        # _dict = UUID_OPENID.get(db,None)
         if self.UUID_OPENID:
-            openid = self.UUID_OPENID.get(uuid,None)
+            openid = self.UUID_OPENID.get(uuid, None)
             if openid:
                 self.client.message.send_text(self.current_agent, openid, msg)
         return -1
@@ -82,13 +82,13 @@ class CorpEntry(object):
         Corp_Token = Param.get_param('Corp_Token') or ''
         Corp_AESKey = Param.get_param('Corp_AESKey') or ''
 
-        Corp_Id = Param.get_param('Corp_Id') or ''       # 企业号
+        Corp_Id = Param.get_param('Corp_Id') or ''  # 企业号
         Corp_Secret = Param.get_param('Corp_Secret') or ''
         Corp_Agent = Param.get_param('Corp_Agent') or 0
         Corp_Agent_Secret = Param.get_param('Corp_Agent_Secret') or ''
 
         from wechatpy.enterprise.crypto import WeChatCrypto
-        _logger.info('Create crypto: %s %s %s'%(Corp_Token, Corp_AESKey, Corp_Id))
+        _logger.info('Create crypto: %s %s %s' % (Corp_Token, Corp_AESKey, Corp_Id))
         try:
             self.crypto_handle = WeChatCrypto(Corp_Token, Corp_AESKey, Corp_Id)
         except:
@@ -98,15 +98,17 @@ class CorpEntry(object):
         self.current_agent = Corp_Agent
 
         try:
-            users = env['wx.corpuser'].sudo().search([('last_uuid','!=',None)])
+            users = env['wx.corpuser'].sudo().search([('last_uuid', '!=', None)])
             for obj in users:
                 self.OPENID_UUID[obj.userid] = obj.last_uuid
                 self.UUID_OPENID[obj.last_uuid] = obj.userid
         except:
             env.cr.rollback()
-            import traceback;traceback.print_exc()
+            import traceback;
+            traceback.print_exc()
 
-        print('corp client init: %s %s'%(self.OPENID_UUID, self.UUID_OPENID))
+        print('corp client init: %s %s' % (self.OPENID_UUID, self.UUID_OPENID))
+
 
 def corpenv(env):
     return CorpEnvDict[env.cr.dbname]

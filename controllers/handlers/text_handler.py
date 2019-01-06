@@ -1,9 +1,5 @@
 # coding=utf-8
 import datetime
-import base64
-import os
-
-import openerp
 
 from ...rpc import corp_client
 
@@ -14,10 +10,10 @@ def kf_handler(request, msg):
     # 获取关联的系统用户
     uid = client.OPENID_UID.get(openid, False)
     if not uid:
-        objs = request.env['wx.corpuser'].sudo().search( [ ('userid', '=', openid) ] )
+        objs = request.env['wx.corpuser'].sudo().search([('userid', '=', openid)])
         if objs.exists():
             corpuser_id = objs[0].id
-            objs2 = request.env['res.partner'].sudo().search( [ ('wxcorp_user_id', '=', corpuser_id) ] )
+            objs2 = request.env['res.partner'].sudo().search([('wxcorp_user_id', '=', corpuser_id)])
             if objs2.exists():
                 uid = objs2[0].id
                 client.OPENID_UID[openid] = uid
@@ -37,7 +33,7 @@ def kf_handler(request, msg):
 
     if not uuid:
         # 客服消息第一次发过来时
-        rs = request.env['wx.corpuser'].sudo().search( [('userid', '=', openid)] )
+        rs = request.env['wx.corpuser'].sudo().search([('userid', '=', openid)])
         if not rs.exists():
             corp_user = request.env['wx.corpuser'].sudo().create({
                 '_from_subscribe': True,
@@ -69,20 +65,20 @@ def kf_handler(request, msg):
         if mtype in ['image', 'voice']:
             media_id = msg.media_id
             r = client.client.media.download(media_id)
-            if mtype=='image':
-                _filename = '%s_%s'%(datetime.datetime.now().strftime("%m%d%H%M%S"), media_id)
+            if mtype == 'image':
+                _filename = '%s_%s' % (datetime.datetime.now().strftime("%m%d%H%M%S"), media_id)
             else:
-                _filename = '%s.%s'%(media_id,msg.format)
+                _filename = '%s.%s' % (media_id, msg.format)
             _data = r.content
             attachment = request.env['ir.attachment'].sudo().create({
-                'name': '__wx_voice|%s'%msg.media_id,
+                'name': '__wx_voice|%s' % msg.media_id,
                 'datas': _data.encode('base64'),
                 'datas_fname': _filename,
                 'res_model': 'mail.compose.message',
                 'res_id': int(0)
             })
             attachment_ids.append(attachment.id)
-        elif mtype=='text':
+        elif mtype == 'text':
             message_content = msg.content
 
         message_type = 'comment'
@@ -95,6 +91,11 @@ def kf_handler(request, msg):
         if kf_flag:
             author_id = False
         mail_channel = request.env["mail.channel"].sudo().search([('uuid', '=', uuid)], limit=1)
-        message = mail_channel.sudo().with_context(mail_create_nosubscribe=True).message_post(author_id=author_id, email_from=mail_channel.anonymous_name, body=message_content, message_type=message_type, subtype='mail.mt_comment', content_subtype='plaintext', attachment_ids=attachment_ids)
+        message = mail_channel.sudo().with_context(mail_create_nosubscribe=True).message_post(author_id=author_id,
+                                                                                              email_from=mail_channel.anonymous_name,
+                                                                                              body=message_content,
+                                                                                              message_type=message_type,
+                                                                                              subtype='mail.mt_comment',
+                                                                                              content_subtype='plaintext',
+                                                                                              attachment_ids=attachment_ids)
     return ret_msg
-

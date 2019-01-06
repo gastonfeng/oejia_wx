@@ -4,7 +4,6 @@ from odoo import models, fields, api
 
 
 class WxConfirm(models.TransientModel):
-
     _name = 'wx.confirm'
     _description = u'确认'
 
@@ -13,6 +12,7 @@ class WxConfirm(models.TransientModel):
     method = fields.Char('方法')
 
     api.multi
+
     def execute(self):
         self.ensure_one()
         active_ids = self._context.get('record_ids')
@@ -21,6 +21,7 @@ class WxConfirm(models.TransientModel):
         return ret
 
     api.multi
+
     def execute_with_info(self):
         self.ensure_one()
         active_ids = self._context.get('record_ids')

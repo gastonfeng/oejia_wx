@@ -1,15 +1,10 @@
 # coding=utf-8
 import logging
-import os
 
-from werobot.parser import parse_user_msg
-from werobot.reply import create_reply
-from werobot.utils import is_string
 import werkzeug
-
-import openerp
 from openerp import http
 from openerp.http import request
+from werobot.parser import parse_user_msg
 
 _logger = logging.getLogger(__name__)
 
